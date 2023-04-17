@@ -1,0 +1,5 @@
+.non_auth_content {
+  width: 40%;
+  margin: 10px auto;
+  min-height: calc(100vh - 155px);
+}

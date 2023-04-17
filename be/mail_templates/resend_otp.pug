@@ -1,0 +1,18 @@
+extends ./index
+
+append head
+    title Resend One-time Password
+    style.
+        .otp {
+            font-size: 35px;
+            font-weight: bold;
+            background-color: mediumseagreen;
+            color: white;
+            padding: 16px;
+            text-align: center;
+        }
+
+append body
+    h2 Greeting #{email}
+    p Here the OTP:
+    p.otp #{otp}
