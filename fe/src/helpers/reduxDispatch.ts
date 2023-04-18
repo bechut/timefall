@@ -1,6 +1,6 @@
 import { reduxConfig, store } from "services/redux";
 
-export type TRDHResponse = {
+export interface TRDHResponse {
   pager: object;
   message: string;
   status: number;

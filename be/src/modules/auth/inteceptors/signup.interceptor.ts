@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import { otpContext } from 'src/constants/auth';
+import { EXPIRED_IN_MINUTES, otpContext } from 'src/constants/auth';
 import { generate_string } from 'src/helpers/generate_string';
 import * as moment from 'moment';
 import { decrypt_AES } from 'src/helpers/aes';
@@ -31,7 +31,7 @@ export class SignUpInterceptor implements NestInterceptor {
     const request = context.switchToHttp().getRequest();
     const { body } = request;
     const newOtp = generate_string(6, true);
-    const expired = 10;
+    const expired = EXPIRED_IN_MINUTES.verify;
     const otpId = v4();
     const otpJwt = this.jwtService.sign(
       {

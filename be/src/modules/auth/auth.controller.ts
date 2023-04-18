@@ -5,6 +5,8 @@ import { LogInDto, SignUpDto, VerifyDto } from './auth.dto';
 import { VerifyInterceptor } from './inteceptors/verify.interceptor';
 import { ResendInterceptor } from './inteceptors/resend.interceptor';
 import { LogInInterceptor } from './inteceptors/login.interceptor';
+import { LogInWithGoogleInterceptor } from './inteceptors/login-with-google.interceptor';
+import { LinkGoogleType } from 'src/orm/entity/user.entity';
 
 export type XSignUp = SignUpDto & {
   otpId: string;
@@ -34,6 +36,19 @@ export type XLogIn = LogInDto & {
   otpJwt: string;
 };
 
+export type XLogInWidthGoogle = {
+  email: string;
+  email_verified: boolean;
+  picture: string;
+  given_name: string;
+  family_name: string;
+  expiredDate: Date;
+  otpId: string;
+  otpJwt: string;
+  otp: string;
+  type: LinkGoogleType;
+};
+
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -60,5 +75,11 @@ export class AuthController {
   @UseInterceptors(LogInInterceptor)
   async login(@Body() body: XLogIn) {
     return this.authService.login(body);
+  }
+
+  @Post('login-with-google')
+  @UseInterceptors(LogInWithGoogleInterceptor)
+  async loginWithGoogle(@Body() body: XLogInWidthGoogle) {
+    return this.authService.loginWithGoogle(body);
   }
 }

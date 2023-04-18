@@ -33,8 +33,8 @@ const TemplateComponent: FC<any> = ({ Layout, Page, isAuth }) => {
   const accessToken = cookie.load(TOKEN_NAME.timeFallAccessToken) || "";
 
   useEffect(() => {
-    if ((isAuth && !accessToken) || (!isAuth && !accessToken)) {
-      navigate("/sign_up");
+    if ((isAuth && !accessToken)) {
+      navigate("/login");
     } else if (!isAuth && accessToken) {
       navigate("/");
     }

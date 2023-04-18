@@ -25,6 +25,11 @@ const metadata = [
         uri: "/auth/login",
         name: "login",
       },
+      {
+        method: axiosCallee("post"),
+        uri: "/auth/login-with-google",
+        name: "login_with_google",
+      },
     ],
   },
   // {

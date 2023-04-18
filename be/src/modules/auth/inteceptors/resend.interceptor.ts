@@ -13,6 +13,7 @@ import { generate_string } from 'src/helpers/generate_string';
 import * as moment from 'moment';
 import { MailerService } from '@nestjs-modules/mailer';
 import { ConfigService } from '@nestjs/config';
+import { EXPIRED_IN_MINUTES } from 'src/constants/auth';
 
 @Injectable()
 export class ResendInterceptor implements NestInterceptor {
@@ -40,7 +41,7 @@ export class ResendInterceptor implements NestInterceptor {
 
       request.body.decode = decode;
       const newOtp = generate_string(6, true);
-      const expired = 10;
+      const expired = EXPIRED_IN_MINUTES.verify;
       const jwt: string = this.jwtService.sign(
         {
           id: decode.id,

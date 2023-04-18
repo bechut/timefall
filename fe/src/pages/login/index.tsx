@@ -1,32 +1,65 @@
-import { Button, Form, Input, Typography, Divider, notification } from "antd";
-import React, { FC, memo, useState } from "react";
+import {
+  Button,
+  Form,
+  Input,
+  Typography,
+  Divider,
+  notification,
+  Row,
+} from "antd";
+import React, { FC, memo, useEffect, useState } from "react";
 import "./index.css";
-import { reduxConfig, store } from "services/redux";
 import { helpers } from "helpers";
 import { Props } from "routers";
 import { Link } from "react-router-dom";
 import { phases, onVerify, onResend } from "pages/sign_up";
 import OtpInput from "components/OtpInput";
 import { ReduxDispatchHelper, TRDHResponse } from "helpers/reduxDispatch";
+import { GoogleLogin } from "@react-oauth/google";
+import { TOKEN_NAME } from "services/api";
+import cookie from "react-cookies";
 
-type TPayload = {
+interface TPayload {
   email: string;
   password: string;
   first_name: string;
   last_name: string;
-};
+  headers?: {
+    Authorization: string;
+  };
+}
 
-const SignUp: FC<Props> = (props) => {
+export enum LinkGoogleType {
+  NO_LINK,
+  NO_LINK_NO_CREATED,
+  LINKED,
+}
+
+const LogIn: FC<Props> = (props) => {
   const [form] = Form.useForm();
   const [phase, setPhase] = useState<string>(phases[1]);
   const [otp, setOtp] = useState<string>("");
   const [token, setToken] = useState<string>("");
 
+  useEffect(() => {
+    setToken("");
+  }, []);
+
   const onFinish = (values: TPayload) => {
-    values = {
-      ...values,
-      password: helpers.encrypt_AES(values.password),
-    };
+    values = token
+      ? // login to linked with google account
+        {
+          ...values,
+          password: helpers.encrypt_AES(values.password),
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      : // normal login
+        {
+          ...values,
+          password: helpers.encrypt_AES(values.password),
+        };
     new ReduxDispatchHelper<{ email: string; password: string }>(
       "login",
       values,
@@ -35,6 +68,38 @@ const SignUp: FC<Props> = (props) => {
         setToken(payload.data.token);
         form.resetFields();
         return notification.success({ message: payload.message });
+      },
+      (errors: TRDHResponse) => {
+        return notification.error({
+          message: errors.message || "Something went wrong. Please try again",
+        });
+      }
+    ).do();
+  };
+
+  const onGoogleLogin = (token: string) => {
+    new ReduxDispatchHelper<{ headers: { Authorization: string } }>(
+      "login_with_google",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+      (payload: TRDHResponse) => {
+        console.log(payload)
+        setToken(payload.data.token);
+        if (payload.data.type === LinkGoogleType.NO_LINK_NO_CREATED) {
+          setPhase(phases[2]);
+        } else if (payload.data.type === LinkGoogleType.LINKED) {
+          cookie.save(TOKEN_NAME.timeFallAccessToken, token, {
+            maxAge: 60 * payload.data.expired,
+            path: "/",
+          });
+          setTimeout(() => {
+            props.navigate("/");
+          }, 1000);
+        }
+        notification.success({ message: payload.message });
       },
       (errors: TRDHResponse) => {
         return notification.error({
@@ -95,6 +160,16 @@ const SignUp: FC<Props> = (props) => {
             </Button>
           </Link>
         </div>
+        <Row justify="center">
+          <GoogleLogin
+            onSuccess={async (credentialResponse) => {
+              onGoogleLogin(credentialResponse.credential || "");
+            }}
+            onError={() => {
+              console.log("Login Failed");
+            }}
+          />
+        </Row>
       </Form>
     );
 
@@ -127,4 +202,4 @@ const SignUp: FC<Props> = (props) => {
   return component;
 };
 
-export default memo(SignUp);
+export default memo(LogIn);

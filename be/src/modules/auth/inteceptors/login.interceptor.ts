@@ -28,22 +28,42 @@ export class LogInInterceptor implements NestInterceptor {
     next: CallHandler,
   ): Promise<Observable<any>> {
     const request = context.switchToHttp().getRequest();
-    const { body } = request;
-    const pass = decrypt_AES(body.password);
-    const newOtp = generate_string(6, true);
-    const expired = 60;
-    const otpId = v4();
-    const otpJwt = this.jwtService.sign(
-      {
-        otpContext: otpContext.login,
-        id: otpId,
-        email: body.email,
-      },
-      { expiresIn: 60 * expired },
-    );
+    const { body, headers } = request;
+
+    // login with bearer is used to link with google account
+    const bearer = headers?.authorization?.split(' ')[1];
+    const decode: any = this.jwtService.decode(bearer);
+
+    let pass = '';
+    let newOtp = '';
+    let expired = 0;
+    let otpId = '';
+    let otpJwt = '';
+    let ctx = otpContext.login;
+
+    if (!bearer) {
+      pass = decrypt_AES(body.password);
+      newOtp = generate_string(6, true);
+      expired = 60;
+      otpId = v4();
+      otpJwt = this.jwtService.sign(
+        {
+          otpContext: otpContext.login,
+          id: otpId,
+          email: body.email,
+        },
+        { expiresIn: 60 * expired },
+      );
+    } else {
+      ctx = decode.otpContext;
+      newOtp = decode.otp;
+      expired = 10;
+      otpId = decode.otpId;
+      otpJwt = bearer;
+    }
 
     body.password = pass;
-    body.otpContext = otpContext.login;
+    body.otpContext = ctx;
     body.newOtp = newOtp;
     body.otpExpiredDate = moment().add(expired, 'minutes').toDate();
     body.otpExpired = expired;

@@ -12,6 +12,12 @@ import { Profile } from './profile.entity';
 import { TimestampPartial } from '../partial/timestamp';
 import { Otp } from './otp.entity';
 
+export enum LinkGoogleType {
+  NO_LINK,
+  NO_LINK_NO_CREATED,
+  LINKED,
+}
+
 @Entity()
 @Unique('UQ_EMAIL', ['email'])
 @Index('IDX_email', ['email'])
@@ -27,6 +33,9 @@ export class User extends TimestampPartial {
 
   @Column({ default: false })
   is_active: boolean;
+
+  @Column({ default: false })
+  is_linked_google: boolean;
 
   @OneToOne(() => Profile, (profile: Profile) => profile.id, {
     onUpdate: 'CASCADE',

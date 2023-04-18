@@ -6,35 +6,38 @@ import Routers from "routers";
 import { ConfigProvider } from "antd";
 import { Provider } from "react-redux";
 import { store } from "services/redux";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
 );
 
 root.render(
-  <React.StrictMode>
-    <Provider store={store}>
-      <ConfigProvider
-        theme={{
-          token: {
-            colorPrimary: "#3b4366",
-          },
-          components: {
-            Layout: {
-              colorBgHeader: "#292f4c", // colorBgBase -3% lightness, i've pre-calculated these values manually, but it'd be smart to use color.js or something like that to manage these manipulations
+  <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID || ""}>
+    <React.StrictMode>
+      <Provider store={store}>
+        <ConfigProvider
+          theme={{
+            token: {
+              colorPrimary: "#3b4366",
             },
-            Menu: {
-              // if you use "dark" theme on menu
-              colorItemBg: "#292f4c", // colorBgBase -3% lightness
-              colorSubItemBg: "#00b96b", // colorBgBase -6% lightness
+            components: {
+              Layout: {
+                colorBgHeader: "#292f4c", // colorBgBase -3% lightness, i've pre-calculated these values manually, but it'd be smart to use color.js or something like that to manage these manipulations
+              },
+              Menu: {
+                // if you use "dark" theme on menu
+                colorItemBg: "#292f4c", // colorBgBase -3% lightness
+                colorSubItemBg: "#00b96b", // colorBgBase -6% lightness
+              },
             },
-          },
-        }}
-      >
-        <Routers />
-      </ConfigProvider>
-    </Provider>
-  </React.StrictMode>
+          }}
+        >
+          <Routers />
+        </ConfigProvider>
+      </Provider>
+    </React.StrictMode>
+  </GoogleOAuthProvider>
 );
 
 // If you want to start measuring performance in your app, pass a function
